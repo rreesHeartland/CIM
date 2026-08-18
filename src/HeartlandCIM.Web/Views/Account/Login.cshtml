@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Sign In";
+    var returnUrl = ViewBag.ReturnUrl as string;
+}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="hcim-card p-4">
+            <h3 class="page-title text-center mt-0"><i class="fa-solid fa-user-gear me-2"></i>Technician Sign-In</h3>
+            <p class="text-muted text-center">Enter your name to begin. It will be recorded with each calibration action.</p>
+            <form asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Technician Name</label>
+                    <input type="text" name="technicianName" class="form-control form-control-lg"
+                           placeholder="e.g. John Smith" autofocus />
+                    <span class="text-danger">@Html.ValidationMessage("technicianName")</span>
+                </div>
+                <button type="submit" class="btn btn-navy btn-lg w-100">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i>Continue
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

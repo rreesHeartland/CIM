@@ -1,0 +1,70 @@
+@inject ICycleService CycleService
+@{
+    var currentCycle = await CycleService.GetCurrentCycleAsync();
+    var tech = Context.Session.GetTechnician();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Heartland CIM</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="hcim-header">
+        <div class="hcim-header-inner">
+            <div class="hcim-header-left">
+                <button type="button" class="hcim-nav-btn" onclick="history.back()" title="Back">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <a class="hcim-nav-btn" href="@Url.Action("Index", "Home")" title="Home">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </div>
+            <div class="hcim-logo">
+                <i class="fa-solid fa-gauge-high me-2"></i>
+                Heartland Calibrated Instruments Manager
+            </div>
+            <div class="hcim-header-right">
+                @if (!string.IsNullOrEmpty(currentCycle))
+                {
+                    <span class="hcim-cycle-badge"><i class="fa-solid fa-rotate me-1"></i>@currentCycle</span>
+                }
+                else
+                {
+                    <span class="hcim-cycle-badge hcim-cycle-none"><i class="fa-solid fa-triangle-exclamation me-1"></i>No Cycle</span>
+                }
+                @if (!string.IsNullOrEmpty(tech))
+                {
+                    <span class="hcim-tech-badge" title="Signed in technician">
+                        <i class="fa-solid fa-user me-1"></i>@tech
+                    </span>
+                }
+            </div>
+        </div>
+    </header>
+
+    <main class="hcim-main container-fluid">
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                @TempData["Message"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="hcim-footer">
+        <span>Heartland Calibrated Instruments Manager &middot; &copy; @DateTime.Now.Year</span>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

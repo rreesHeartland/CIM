@@ -1,0 +1,194 @@
+@model CalibrationInstrument
+@{
+    ViewData["Title"] = "Instrument Details";
+    var status = Model.Status;
+    var showRemove = Model.Removed_Time == null;
+    var showInstall = Model.Removed_Time != null && Model.Install_Time == null;
+    var showVerify = Model.Install_Time != null && Model.Feedback_Verified_Time == null;
+    var hasDrain = !string.IsNullOrWhiteSpace(Model.DrainTanks);
+}
+
+<h2 class="page-title"><i class="fa-solid fa-microscope me-2"></i>@Model.Area &mdash; @Model.Title Instrument Details</h2>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="hcim-card p-3 text-center">
+            @if (!string.IsNullOrEmpty(Model.Detail_PicPath))
+            {
+                <img src="@Model.Detail_PicPath" class="detail-photo" alt="@Model.Title"
+                     onclick="zoomImage('@Model.Detail_PicPath', '@Model.Title - Close Up')" />
+                <div class="small text-muted mt-1">Click photo to zoom</div>
+            }
+            else
+            {
+                <div class="no-photo">No close-up photo available</div>
+            }
+
+            <button type="button" class="btn btn-accent mt-3 w-100"
+                    onclick="zoomImage('@(Model.Wide_PicPath ?? "")', '@Model.Title - Wide Angle')"
+                    @(string.IsNullOrEmpty(Model.Wide_PicPath) ? "disabled" : "")>
+                <i class="fa-solid fa-location-dot me-2"></i>Where is this instrument?
+            </button>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="hcim-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0" style="color:var(--navy)">@Model.Title</h4>
+                <span class="status-badge @UiHelpers.StatusCssClass(status)">@status</span>
+            </div>
+            <dl class="row info-grid mb-4">
+                <dt class="col-5">Manufacturer</dt><dd class="col-7">@Model.Manufacturer</dd>
+                <dt class="col-5">Model No</dt><dd class="col-7">@Model.ModelNumber</dd>
+                <dt class="col-5">Instrument Type</dt><dd class="col-7">@Model.InstrumentType</dd>
+                <dt class="col-5">Serial No</dt><dd class="col-7">@Model.SerialNumber</dd>
+                <dt class="col-5">Access Requirement</dt><dd class="col-7 @UiHelpers.AccessCssClass(Model.AccessRequirement)">@Model.AccessRequirement</dd>
+                <dt class="col-5">Calibration Status</dt><dd class="col-7">@status</dd>
+                <dt class="col-5">Last Cal Date</dt><dd class="col-7">@(Model.Last_Cal_Date?.ToString("MMM d, yyyy") ?? "-")</dd>
+            </dl>
+
+            @* ---- Action buttons ---- *@
+            <div id="actionButtons" class="d-grid gap-2">
+                @if (showRemove)
+                {
+                    <button type="button" class="btn btn-red btn-lg"
+                            onclick="startAction('remove', @(hasDrain ? "true" : "false"))">
+                        <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>REMOVE
+                    </button>
+                }
+                else if (showInstall)
+                {
+                    <button type="button" class="btn btn-accent btn-lg" onclick="startAction('install', false)">
+                        <i class="fa-solid fa-arrow-down-to-bracket me-2"></i>INSTALL
+                    </button>
+                }
+                else if (showVerify)
+                {
+                    <button type="button" class="btn btn-green btn-lg" onclick="startAction('verify', false)">
+                        <i class="fa-solid fa-circle-check me-2"></i>VERIFY
+                    </button>
+                }
+                else
+                {
+                    <div class="alert alert-success mb-0 text-center">
+                        <i class="fa-solid fa-circle-check me-1"></i>This instrument is fully verified.
+                    </div>
+                }
+            </div>
+
+            @* ---- Confirmation panel ---- *@
+            <div id="confirmPanel" class="mt-3 p-3 border rounded d-none" style="background:#f8fbff">
+                <h6 id="confirmTitle" class="fw-bold"></h6>
+                <div id="verifyOption" class="form-check my-2 d-none">
+                    <input class="form-check-input" type="checkbox" id="alsoVerify" />
+                    <label class="form-check-label" for="alsoVerify">Also verify this instrument now</label>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small mb-1">Slide to confirm</label>
+                    <input type="range" class="form-range" min="0" max="100" value="0" id="confirmSlider" />
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-green flex-fill" id="confirmBtn" disabled onclick="submitAction()">
+                        <i class="fa-solid fa-check me-1"></i>Confirm
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="cancelAction()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ---- Zoom modal ---- *@
+<div class="modal fade" id="imageZoomModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="zoomImg" src="" class="img-fluid" alt="zoom" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ---- Drain tanks warning modal ---- *@
+@if (hasDrain)
+{
+    <div class="modal fade" id="drainModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="fa-solid fa-triangle-exclamation me-2"></i>Drain Tanks Required</h5>
+                </div>
+                <div class="modal-body">
+                    <p>This instrument requires tanks to be drained before servicing:</p>
+                    <p class="fw-bold text-danger">@Model.DrainTanks</p>
+                    <p class="mb-0">Confirm the tanks are drained before continuing.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" onclick="cancelAction()">Cancel</button>
+                    <button type="button" class="btn btn-red" id="drainAckBtn">I understand, continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        var actionUrl = '@Url.Action("DoAction", "Calibrations")';
+        var instrumentId = @Model.Id;
+        var pendingAction = null;
+
+        function startAction(action, requiresDrain) {
+            pendingAction = action;
+            if (requiresDrain) {
+                var dm = document.getElementById('drainModal');
+                bootstrap.Modal.getOrCreateInstance(dm).show();
+                document.getElementById('drainAckBtn').onclick = function () {
+                    bootstrap.Modal.getInstance(dm).hide();
+                    openConfirm(action);
+                };
+                return;
+            }
+            openConfirm(action);
+        }
+
+        function openConfirm(action) {
+            document.getElementById('actionButtons').classList.add('d-none');
+            var panel = document.getElementById('confirmPanel');
+            panel.classList.remove('d-none');
+            var titles = { remove: 'Confirm REMOVE', install: 'Confirm INSTALL', verify: 'Confirm VERIFY' };
+            document.getElementById('confirmTitle').textContent = titles[action] || 'Confirm';
+            document.getElementById('verifyOption').classList.toggle('d-none', action !== 'install');
+            document.getElementById('confirmSlider').value = 0;
+            document.getElementById('confirmBtn').disabled = true;
+        }
+
+        function cancelAction() {
+            pendingAction = null;
+            document.getElementById('confirmPanel').classList.add('d-none');
+            document.getElementById('actionButtons').classList.remove('d-none');
+        }
+
+        document.getElementById('confirmSlider').addEventListener('input', function () {
+            document.getElementById('confirmBtn').disabled = (parseInt(this.value, 10) < 100);
+        });
+
+        function submitAction() {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            var alsoVerify = document.getElementById('alsoVerify').checked;
+            document.getElementById('confirmBtn').disabled = true;
+            doCalibrationAction(actionUrl, token, instrumentId, pendingAction, alsoVerify)
+                .then(function (res) {
+                    if (res.success) { window.location.href = res.redirectUrl; }
+                    else { alert(res.message || 'Action failed.'); cancelAction(); }
+                })
+                .catch(function () { alert('Network error.'); cancelAction(); });
+        }
+    </script>
+}

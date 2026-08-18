@@ -1,0 +1,55 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+}
+<div class="text-center mt-4">
+    <h2 class="page-title">Select an Activity</h2>
+    @if (Model.CycleConfirmed)
+    {
+        <p class="lead">Current Calibration Cycle: <strong class="text-primary">@Model.CurrentCycle</strong></p>
+    }
+    else
+    {
+        <div class="alert alert-warning d-inline-block">
+            <i class="fa-solid fa-triangle-exclamation me-1"></i>
+            No calibration cycle is confirmed. Open a cycle in <strong>Admin &rarr; Area Management</strong> to enable Calibrations.
+        </div>
+    }
+</div>
+
+<div class="activity-grid">
+    @if (Model.CycleConfirmed)
+    {
+        <a class="activity-card" href="@Url.Action("SelectArea", "Calibrations")">
+            <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span>
+            <h5>Calibrations</h5>
+            <p class="text-muted mb-0">Remove, install &amp; verify instruments</p>
+        </a>
+    }
+    else
+    {
+        <span class="activity-card disabled" title="A cycle must be confirmed first">
+            <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span>
+            <h5>Calibrations</h5>
+            <p class="text-muted mb-0">Requires a confirmed cycle</p>
+        </span>
+    }
+
+    <a class="activity-card" href="@Url.Action("Browser", "Images")">
+        <span class="icon"><i class="fa-solid fa-images"></i></span>
+        <h5>Browse &amp; Update Pictures</h5>
+        <p class="text-muted mb-0">View and replace instrument photos</p>
+    </a>
+
+    <a class="activity-card" href="@Url.Action("Records", "Instruments")">
+        <span class="icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <h5>Instrument Records</h5>
+        <p class="text-muted mb-0">Look up instrument details</p>
+    </a>
+
+    <a class="activity-card" href="@Url.Action("Index", "Admin")">
+        <span class="icon"><i class="fa-solid fa-gears"></i></span>
+        <h5>Admin</h5>
+        <p class="text-muted mb-0">Cycles, areas &amp; maintenance</p>
+    </a>
+</div>

@@ -1,0 +1,61 @@
+@model ImageBrowserViewModel
+@{
+    ViewData["Title"] = "Image Browser";
+}
+<h2 class="page-title"><i class="fa-solid fa-images me-2"></i>Browse &amp; Update Pictures</h2>
+
+<div class="hcim-card p-3 mb-4">
+    <form asp-action="Browser" method="get" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label">Select Area</label>
+            <select name="area" class="form-select" onchange="this.form.submit()">
+                <option value="">-- select an area --</option>
+                @foreach (var a in Model.Areas)
+                {
+                    <option value="@a" selected="@(a == Model.SelectedArea)">@a</option>
+                }
+            </select>
+        </div>
+    </form>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.SelectedArea))
+{
+    <div class="row g-3">
+        @if (!Model.Instruments.Any())
+        {
+            <div class="col-12"><div class="alert alert-info">No instruments in this area.</div></div>
+        }
+        @foreach (var i in Model.Instruments)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="hcim-card p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-bold">@i.Title</h6>
+                        <a class="btn btn-sm btn-accent" href="@Url.Action("Updater", "Images", new { id = i.Id })">
+                            <i class="fa-solid fa-pen me-1"></i>Update
+                        </a>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6 text-center">
+                            <div class="small text-muted mb-1">Close Up</div>
+                            @if (!string.IsNullOrEmpty(i.Detail_PicPath))
+                            {
+                                <img src="@i.Detail_PicPath" class="img-fluid rounded" style="max-height:120px" alt="detail" />
+                            }
+                            else { <div class="no-photo">None</div> }
+                        </div>
+                        <div class="col-6 text-center">
+                            <div class="small text-muted mb-1">Wide Angle</div>
+                            @if (!string.IsNullOrEmpty(i.Wide_PicPath))
+                            {
+                                <img src="@i.Wide_PicPath" class="img-fluid rounded" style="max-height:120px" alt="wide" />
+                            }
+                            else { <div class="no-photo">None</div> }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

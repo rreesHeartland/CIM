@@ -1,0 +1,26 @@
+@model ResultViewModel
+@{
+    ViewData["Title"] = "Success";
+}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-7">
+        <div class="hcim-card p-5 text-center">
+            <div class="mb-3"><i class="fa-solid fa-circle-check fa-4x text-success"></i></div>
+            <h2 class="text-success fw-bold">SUCCESS</h2>
+            <p class="lead mb-1"><strong>@Model.Title</strong></p>
+            <p class="text-muted">Action performed: <strong>@Model.ActionPerformed</strong></p>
+
+            <div class="d-grid gap-2 col-md-8 mx-auto mt-4">
+                <a class="btn btn-navy btn-lg" href="@Url.Action("SelectInstrument", "Calibrations", new { area = Model.Area })">
+                    <i class="fa-solid fa-list-check me-2"></i>Another instrument in @Model.Area
+                </a>
+                <a class="btn btn-accent" href="@Url.Action("SelectArea", "Calibrations")">
+                    <i class="fa-solid fa-layer-group me-2"></i>Select a new area
+                </a>
+                <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Home")">
+                    <i class="fa-solid fa-house me-2"></i>Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

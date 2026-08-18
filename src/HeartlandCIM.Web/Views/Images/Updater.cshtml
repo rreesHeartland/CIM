@@ -1,0 +1,74 @@
+@model CalibrationInstrument
+@{
+    ViewData["Title"] = "Update Photo";
+}
+<h2 class="page-title"><i class="fa-solid fa-camera me-2"></i>Update Photo &mdash; @Model.Title</h2>
+
+<div class="hcim-card p-4">
+    <form asp-action="UploadPhoto" method="post" enctype="multipart/form-data" id="uploadForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Image Type</label>
+            <div class="btn-group d-block" role="group">
+                <input type="radio" class="btn-check" name="imageType" id="typeDetail" value="Detail" checked onchange="switchType()">
+                <label class="btn btn-outline-primary" for="typeDetail"><i class="fa-solid fa-image me-1"></i>Close Up</label>
+                <input type="radio" class="btn-check" name="imageType" id="typeWide" value="Wide" onchange="switchType()">
+                <label class="btn btn-outline-primary" for="typeWide"><i class="fa-solid fa-panorama me-1"></i>Wide Angle</label>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 text-center">
+                <h6 class="text-muted">Existing Photo</h6>
+                <div id="existingDetail">
+                    @if (!string.IsNullOrEmpty(Model.Detail_PicPath))
+                    { <img src="@Model.Detail_PicPath" class="img-fluid rounded border" alt="existing detail" /> }
+                    else { <div class="no-photo">No close-up photo</div> }
+                </div>
+                <div id="existingWide" class="d-none">
+                    @if (!string.IsNullOrEmpty(Model.Wide_PicPath))
+                    { <img src="@Model.Wide_PicPath" class="img-fluid rounded border" alt="existing wide" /> }
+                    else { <div class="no-photo">No wide-angle photo</div> }
+                </div>
+            </div>
+            <div class="col-md-6 text-center">
+                <h6 class="text-muted">New Photo</h6>
+                <div id="previewWrap" class="no-photo">No new photo selected</div>
+                <input type="file" name="photo" id="photoInput" accept="image/*" class="form-control mt-3" onchange="previewPhoto(event)" required />
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-green flex-fill" id="useBtn" disabled>
+                <i class="fa-solid fa-check me-1"></i>Use New Photo
+            </button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Browser", "Images", new { area = Model.Area })">
+                Keep Existing / Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function switchType() {
+            var wide = document.getElementById('typeWide').checked;
+            document.getElementById('existingDetail').classList.toggle('d-none', wide);
+            document.getElementById('existingWide').classList.toggle('d-none', !wide);
+        }
+        function previewPhoto(e) {
+            var file = e.target.files[0];
+            var wrap = document.getElementById('previewWrap');
+            if (!file) { wrap.className = 'no-photo'; wrap.textContent = 'No new photo selected'; document.getElementById('useBtn').disabled = true; return; }
+            var reader = new FileReader();
+            reader.onload = function (ev) {
+                wrap.className = '';
+                wrap.innerHTML = '<img src="' + ev.target.result + '" class="img-fluid rounded border" alt="new" />';
+                document.getElementById('useBtn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+}

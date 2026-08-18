@@ -1,0 +1,13 @@
+## .NET
+bin/
+obj/
+*.user
+.vs/
+
+## Uploads (runtime-generated instrument photos)
+src/HeartlandCIM.Web/wwwroot/uploads/*
+!src/HeartlandCIM.Web/wwwroot/uploads/.gitkeep
+
+## Rider / VS Code
+.idea/
+.vscode/
